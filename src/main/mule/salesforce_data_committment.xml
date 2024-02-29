@@ -43,7 +43,8 @@ output application/xml
     "contact":payload map {
         "firstname": $.firstname,
         "lastname": $.lastname,
-        "email" :$.email
+        "email" :$.email,
+	"phone": "9502078114"			
     }
 }]]></ee:set-payload>
 			</ee:message>
