@@ -1,0 +1,13 @@
+{
+  "sampleData": {
+    "bf79f3d6-6d89-47e0-a763-b338b5ad262c": {
+      "payload": "sample_data/list_contact.dwl"
+    },
+    "1ced5baa-57a4-49d8-99ae-77cacfeb4267": {
+      "payload": "sample_data/bulkoperationresult.dwl"
+    },
+    "f6d276a4-c2ac-4dd7-ac2e-9d3bdf5d3299": {
+      "payload": "sample_data/list_json.json"
+    }
+  }
+}

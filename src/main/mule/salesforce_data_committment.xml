@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:xml-module="http://www.mulesoft.org/schema/mule/xml-module"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mule/xml-module/current/mule-xml-module.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
+	<flow name="salesforce_data_committmentFlow" doc:id="6ccfbe67-bcb8-4166-b9fe-7a59f3ea2d74" >
+		<http:listener doc:name="Listener" doc:id="0c1a93bb-ca43-4f19-b4eb-a0d61d7bf17e" config-ref="HTTP_Listener_config" path="/demosalesforce">
+			<http:error-response>
+				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload.message[0]]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<salesforce:query doc:name="Query" doc:id="279f783c-b38a-459b-be99-ccdc38c854a4" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[Select Firstname,Lastname,Email from Contact where id = ':ids']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	"ids" : attributes.queryParams.ids
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="bf79f3d6-6d89-47e0-a763-b338b5ad262c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	firstname: payload01.FirstName,
+	lastname: payload01.LastName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+<json:validate-schema doc:name="Validate schema" doc:id="3d521551-ba60-4505-9424-36d8263e3922" schema="jsonSchema.json"/>
+				<ee:transform doc:name="Transform Message" doc:id="f6d276a4-c2ac-4dd7-ac2e-9d3bdf5d3299" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+"contacts":{
+    "contact":payload map {
+        "firstname": $.firstname,
+        "lastname": $.lastname,
+        "email" :$.email
+    }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<xml-module:validate-schema doc:name="Validate schema" doc:id="72f6e0de-9c2f-4d95-b3e7-46f10386acdd" schemas="xmlSchema.xsd"/>
+		<ee:transform doc:name="Transform Message" doc:id="b5e0161e-0eb9-4451-8dc4-c8dc5c5cdb8f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.contacts.*contact map{
+    "firstname": $.firstname,
+    "lastname" : $.lastname,
+    "email": $.email
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Contact" doc:name="Create" doc:id="ec6f372a-a537-44d8-93d0-3a93d5f0f933" config-ref="Salesforce_Config1"/>
+	</flow>
+</mule>
