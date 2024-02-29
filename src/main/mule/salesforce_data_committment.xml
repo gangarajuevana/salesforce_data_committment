@@ -44,7 +44,7 @@ output application/xml
         "firstname": $.firstname,
         "lastname": $.lastname,
         "email" :$.email,
-	"phone": "9502078114"			
+	"phone": "9502078123"			
     }
 }]]></ee:set-payload>
 			</ee:message>
